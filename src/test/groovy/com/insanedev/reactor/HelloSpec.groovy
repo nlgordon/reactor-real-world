@@ -46,7 +46,8 @@ class HelloSpec extends Specification {
                 sink.next(it)
                 sleep(10)
             })
-        }, FluxSink.OverflowStrategy.ERROR).publishOn(Schedulers.newSingle("publisher"))
+        }, FluxSink.OverflowStrategy.ERROR)
+                .publishOn(Schedulers.newSingle("publisher"))
 
         when:
         flux.subscribeOn(Schedulers.immediate()).subscribe({
