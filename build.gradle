@@ -1,5 +1,8 @@
+import com.bmuschko.gradle.docker.tasks.container.*
+
 buildscript {
     ext {
+        // Must be M3 to play nice with com.bmuschko.docker-remote-api plugin due to jersey issue at: https://github.com/bmuschko/gradle-docker-plugin/issues/467
         springBootVersion = '2.0.0.M3'
     }
     repositories {
@@ -12,10 +15,13 @@ buildscript {
     }
 }
 
+plugins {
+    id "com.bmuschko.docker-remote-api" version "3.1.0"
+    id "groovy"
+}
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'groovy'
 
 
 repositories {
@@ -33,9 +39,13 @@ dependencyManagement {
 dependencies {
 	compile 'org.codehaus.groovy:groovy-all'
     compile 'io.projectreactor:reactor-core'
+    compile 'io.projectreactor.ipc:reactor-netty'
     compile 'org.postgresql:postgresql'
     compile 'org.springframework.boot:spring-boot-starter-data-jpa'
-//    compile 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+    compile 'org.springframework.boot:spring-boot-starter-webflux'
+    compile 'com.google.code.gson:gson'
+    compile 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+    compile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo'
     runtime 'org.postgresql:postgresql'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'io.projectreactor:reactor-test'
@@ -43,6 +53,34 @@ dependencies {
     testCompile "org.spockframework:spock-spring:1.1-groovy-2.4"
 }
 
+ext {
+    postgresContainerName = "reactor_real_world_postgres"
+}
+
+// docker run --name reactor-postgres -p 5432:5432/tcp -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+task createPostgresContainer(type: DockerCreateContainer) {
+    targetImageId { 'postgres:latest' }
+    portBindings = ['5432:5432']
+    env = ['POSTGRES_PASSWORD=mysecretpassword']
+
+    containerName postgresContainerName
+}
+
+task startPostgresContainer(type: DockerStartContainer, dependsOn: createPostgresContainer) {
+    targetContainerId { createPostgresContainer.getContainerId() }
+}
+
+task stopPostgresContainer(type: DockerStopContainer) {
+    targetContainerId { postgresContainerName }
+}
+
+task cleanupPostgresContainer(type: DockerRemoveContainer, dependsOn: stopPostgresContainer) {
+    targetContainerId { postgresContainerName }
+}
+
 task wrapper(type: Wrapper) {
 	gradleVersion = '4.1'
 }
+
+test.dependsOn(startPostgresContainer)
+test.finalizedBy(cleanupPostgresContainer)

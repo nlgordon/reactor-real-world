@@ -1,46 +1,41 @@
 package com.insanedev.reactor
 
+import org.junit.Test
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.scheduler.Schedulers
 import reactor.test.StepVerifier
-import spock.lang.Specification
 
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-class HelloSpec extends Specification {
+class TestHello {
 
-    def "hello world compiles"() {
-        setup:
+    @Test
+    void "hello world compiles"() {
         Hello hello = new Hello()
 
-        when:
         String result = hello.say()
 
-        then:
-        result == 'world'
+        assert result == 'world'
     }
 
-    def "expect hello then world"() {
-        setup:
+    @Test
+    void "expect hello then world"() {
         Hello hello = new Hello()
 
-        when:
         def verifier = StepVerifier.create(hello.flux())
 
-        then:
         verifier
                 .expectNext("hello")
                 .expectNext("world")
                 .verifyComplete()
     }
 
-    def "lots of output on separate thread"() {
-        setup:
+    @Test
+    void "lots of output on separate thread"() {
         def diff = new AtomicLong()
 
-        Flux flux = Flux.push({sink ->
+        Flux flux = Flux.push({ sink ->
             Flux.range(0, 300).subscribe({
                 diff.getAndIncrement()
                 sink.next(it)
@@ -49,14 +44,10 @@ class HelloSpec extends Specification {
         }, FluxSink.OverflowStrategy.ERROR)
                 .publishOn(Schedulers.newSingle("publisher"))
 
-        when:
         flux.subscribeOn(Schedulers.immediate()).subscribe({
             def val = diff.getAndDecrement()
             println "$it : $val"
             sleep(1000)
         })
-
-        then:
-        1==1
     }
 }
