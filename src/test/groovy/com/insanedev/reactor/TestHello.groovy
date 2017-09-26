@@ -11,15 +11,6 @@ import java.util.concurrent.atomic.AtomicLong
 class TestHello {
 
     @Test
-    void "hello world compiles"() {
-        Hello hello = new Hello()
-
-        String result = hello.say()
-
-        assert result == 'world'
-    }
-
-    @Test
     void "expect hello then world"() {
         Hello hello = new Hello()
 
