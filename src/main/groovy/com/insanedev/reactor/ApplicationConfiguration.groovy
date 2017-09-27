@@ -31,7 +31,8 @@ class ApplicationConfiguration extends AbstractReactiveMongoConfiguration {
     @Override
     @Bean
     @DependsOn("embeddedMongoServer")
-    MongoClient mongoClient() {
+//    MongoClient mongoClient() { // 2.0.0.M3 version
+    MongoClient reactiveMongoClient() { // 2.0.0.M4 version
         int port = environment.getProperty("local.mongo.port", Integer.class)
         return MongoClients.create(String.format("mongodb://localhost:%d", port))
     }

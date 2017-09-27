@@ -31,15 +31,7 @@ class TestMongo {
 
     @Before
     void setup() {
-        template.collectionExists(Word)
-                .flatMap({ exists -> exists ? template.dropCollection(Word) : Mono.just(exists) })
-                .flatMap({ exists -> template.createCollection(Word, new CollectionOptions(1024 * 1024, 100, true)) })
-                .then()
-                .block()
-
-        repository.saveAll(Flux.just(new Word(word: "Hello"), new Word(word: "World")))
-                .then()
-                .block()
+        TestUtils.setupMongo(template, repository)
 
         println "Done with setup"
     }

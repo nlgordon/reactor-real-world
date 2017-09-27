@@ -3,7 +3,7 @@ import com.bmuschko.gradle.docker.tasks.container.*
 buildscript {
     ext {
         // Must be M3 to play nice with com.bmuschko.docker-remote-api plugin due to jersey issue at: https://github.com/bmuschko/gradle-docker-plugin/issues/467
-        springBootVersion = '2.0.0.M3'
+        springBootVersion = '2.0.0.M4'
     }
     repositories {
         mavenCentral()
