@@ -32,7 +32,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "io.projectreactor:reactor-bom:Bismuth-M4"
+        mavenBom "io.projectreactor:reactor-bom:Bismuth-RELEASE"
     }
 }
 
@@ -66,6 +66,7 @@ task createPostgresContainer(type: DockerCreateContainer) {
     containerName postgresContainerName
 }
 
+// Currently this is broken with boot 2.0.0.M4, works with 2.0.0.M3, but that breaks some spring 5 awesome.
 task startPostgresContainer(type: DockerStartContainer, dependsOn: createPostgresContainer) {
     targetContainerId { createPostgresContainer.getContainerId() }
 }
@@ -82,5 +83,5 @@ task wrapper(type: Wrapper) {
 	gradleVersion = '4.1'
 }
 
-test.dependsOn(startPostgresContainer)
-test.finalizedBy(cleanupPostgresContainer)
+//test.dependsOn(startPostgresContainer)
+//test.finalizedBy(cleanupPostgresContainer)
