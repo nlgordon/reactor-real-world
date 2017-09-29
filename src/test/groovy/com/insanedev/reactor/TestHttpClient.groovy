@@ -1,5 +1,6 @@
 package com.insanedev.reactor
 
+import groovy.json.JsonOutput
 import io.netty.buffer.ByteBuf
 import io.netty.handler.codec.http.HttpContent
 import org.junit.Test
@@ -9,7 +10,7 @@ import reactor.core.publisher.Flux
 import reactor.ipc.netty.http.client.HttpClient
 import reactor.ipc.netty.http.client.HttpClientResponse
 
-import java.util.concurrent.CountDownLatch
+import java.util.function.Function
 
 class TestHttpClient {
     String URL = "https://api.github.com/users/nlgordon/events"
@@ -17,6 +18,7 @@ class TestHttpClient {
     @Test
     void "read url"() {
         setup:
+        String expectedContent = new URL(URL).query
         HttpClient client = HttpClient.create()
 
         /*
@@ -30,34 +32,27 @@ class TestHttpClient {
         Possibly glean some cruft from here: https://spring.io/guides/gs/reactor-thumbnailer/
          */
 
-        when:
-        client
-                .get(URL)
-        // Something seems off about the threading in this. Can't seem to get it to block on the immediate thread.
-//                .subscribeOn(Schedulers.immediate())
-                .subscribe({ HttpClientResponse response ->
-//            response
-//                    .receive()
-//                    .asInputStream()
-//                    .subscribeOn(Schedulers.immediate())
-//                    .subscribe({ stream ->
-//                        print "Available bytes: ${stream.available()}"
-//                    })
-            Flux.create({ sink ->
-                response.receiveContent().doOnComplete({ sink.complete() }).subscribe({ HttpContent content ->
-                    ByteBuf buffer = content.content()
-                    byte[] bytes = new byte[buffer.readableBytes()]
-                    buffer.readBytes(bytes)
-                    sink.next(new String(bytes))
-                    content.release()
-                })
-            }).subscribe({
-                print "CONTENT: $it\n\n\n"
+        Function<HttpClientResponse, Flux<String>> convertResponseToString = { HttpClientResponse response ->
+            return response.receiveContent().map({ HttpContent content ->
+                ByteBuf buffer = content.content()
+                byte[] bytes = new byte[buffer.readableBytes()]
+                buffer.readBytes(bytes)
+                return new String(bytes)
             })
-        })
+        }
 
-        print "foo"
-        sleep(10000)
+        when:
+        String actualContent = client
+                .get(URL)
+                .flatMapMany(convertResponseToString)
+                .reduce("", { accumulatedContent, content -> accumulatedContent + content })
+                .block()
+
+        println JsonOutput.prettyPrint(actualContent)
+
+        then:
+        actualContent == expectedContent
+
     }
 
     @Test
