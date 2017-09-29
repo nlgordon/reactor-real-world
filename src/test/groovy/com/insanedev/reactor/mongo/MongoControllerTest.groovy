@@ -39,7 +39,7 @@ class MongoControllerTest {
         FluxExchangeResult<Word> words = client
                 .get()
                 .uri("/words/list")
-                .exchange()
+                .exchange() // Groovy fails at type detection here. Seems to be a groovy problem.
                 .expectStatus().isOk()
                 .returnResult(Word)
 

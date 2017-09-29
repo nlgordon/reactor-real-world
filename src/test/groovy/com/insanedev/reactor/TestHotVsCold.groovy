@@ -6,10 +6,11 @@ import org.junit.Test
 import reactor.core.publisher.Flux
 
 class TestHotVsCold {
+    public static final String TEMP_FILE = "temp.json"
     Gson gson = new Gson()
 
-    JsonReader openFile() {
-        def file = new File("temp.json")
+    JsonReader openFile(String filename) {
+        def file = new File(filename)
         JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(file.newInputStream())))
         reader.beginArray()
         println "File opened"
@@ -18,7 +19,7 @@ class TestHotVsCold {
 
     @Test
     void "read json hot"() {
-        JsonReader reader = openFile()
+        JsonReader reader = openFile(TEMP_FILE)
         Flux<Map> flux = Flux.generate({ sink ->
             println "Generate called"
             if (reader.hasNext()) {
@@ -36,7 +37,7 @@ class TestHotVsCold {
     void "read json cold"() {
         Flux<Map> flux = Flux.defer({
             println "Defer called"
-            JsonReader reader = openFile()
+            JsonReader reader = openFile(TEMP_FILE)
             Flux.generate({ sink ->
                 if (reader.hasNext()) {
                     sink.next(gson.fromJson(reader, Map))

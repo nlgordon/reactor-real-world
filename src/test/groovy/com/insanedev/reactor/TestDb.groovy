@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowCallbackHandler
 import org.springframework.test.context.junit4.SpringRunner
 import reactor.core.publisher.Flux
-import reactor.test.StepVerifier
 
 import javax.sql.DataSource
 import java.sql.ResultSet
