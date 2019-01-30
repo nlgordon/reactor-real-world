@@ -38,12 +38,14 @@ class TestDb {
     @Test
     void "Flux via push"() {
         Flux flux = Flux.push({ sink ->
+            println "Started Push"
             ResultSet results = queryWords()
 
             while (results.next()) {
                 sink.next(results.getString("word"))
             }
             sink.complete()
+            println "Ended Push"
         })
 
         println "Created"

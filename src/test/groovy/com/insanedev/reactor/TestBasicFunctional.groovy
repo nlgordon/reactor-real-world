@@ -36,10 +36,6 @@ class TestBasicFunctional {
         def groovy = letters
                 .findAll({letter -> letter != "b"})
                 .collect(toUpper)
-
-        println "Created"
-
-        groovy
                 .forEach({upperLetter -> println upperLetter})
     }
 

@@ -80,7 +80,7 @@ task cleanupPostgresContainer(type: DockerRemoveContainer, dependsOn: stopPostgr
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '4.1'
+	gradleVersion = '4.9'
 }
 
 //test.dependsOn(startPostgresContainer)

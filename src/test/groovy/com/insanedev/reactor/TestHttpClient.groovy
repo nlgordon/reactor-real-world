@@ -45,6 +45,7 @@ class TestHttpClient {
         String actualContent = client
                 .get(URL)
                 .flatMapMany(convertResponseToString)
+                .doOnNext({ println "CONTENT: $it"})
                 .reduce("", { accumulatedContent, content -> accumulatedContent + content })
                 .block()
 
